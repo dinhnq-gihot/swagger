@@ -1,0 +1,183 @@
+swagger: "2.0"
+info:
+  title: proto/esim.proto
+  version: version not set
+tags:
+  - name: ESimService
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /get_bill/{bill_id}:
+    get:
+      summary: Get any bill data and bill information will be returned.
+      operationId: ESimService_GetBill
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/esimGetResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/googlerpcStatus'
+      parameters:
+        - name: bill_id
+          description: ID of the bill to be retrieved.
+          in: path
+          required: true
+          type: string
+      tags:
+        - ESimService
+  /last_bill/{bill_customer}:
+    get:
+      summary: Get the latest bill data and bill information to be returned.
+      operationId: ESimService_LastBill
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/esimLastResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/googlerpcStatus'
+      parameters:
+        - name: bill_customer
+          description: Wallet address customer associated with the bill.
+          in: path
+          required: true
+          type: string
+      tags:
+        - ESimService
+  /on_bill:
+    post:
+      summary: Request bill payment.
+      operationId: ESimService_OnBill
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/esimOnBillResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/googlerpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/esimOnBillRequest'
+      tags:
+        - ESimService
+definitions:
+  esimGetResponse:
+    type: object
+    properties:
+      bill_id:
+        type: string
+        description: ID of the retrieved bill.
+      bill_customer:
+        type: string
+        description: Customer associated with the retrieved bill.
+      paid_amount:
+        type: string
+        description: Amount paid for the retrieved bill.
+      rewarded_amount:
+        type: string
+        description: Amount rewarded for the retrieved bill (optional).
+      paid_txhash:
+        type: string
+        description: Transaction hash for the payment of the retrieved bill.
+      rewarded_txhash:
+        type: string
+        description: Transaction hash for the reward of the retrieved bill (optional).
+      status:
+        $ref: '#/definitions/esimStatus'
+        description: Status of the retrieved bill.
+  esimLastResponse:
+    type: object
+    properties:
+      bill_id:
+        type: string
+        description: id of the last bill.
+      bill_customer:
+        type: string
+        description: Wallet address customer associated with the bill.
+      paid_amount:
+        type: string
+        description: Amount paid for the last bill.
+      rewarded_amount:
+        type: string
+        description: Amount rewarded for the last bill (optional).
+      paid_txhash:
+        type: string
+        description: Transaction hash for the payment of the last bill.
+      rewarded_txhash:
+        type: string
+        description: Transaction hash for the reward of the last bill (optional).
+      status:
+        $ref: '#/definitions/esimStatus'
+        description: Status of the last bill.
+  esimOnBillRequest:
+    type: object
+    properties:
+      bill_customer:
+        type: string
+        title: Wallet address of customer
+      bill_id:
+        type: string
+        title: ID of the bill to be paid
+      bill_quality:
+        type: string
+        title: Bill value to be paid
+  esimOnBillResponse:
+    type: object
+    properties:
+      result:
+        type: string
+        description: Result of the OnBill operation.
+  esimStatus:
+    type: string
+    enum:
+      - NOT_FOUND
+      - PAID
+      - REWARDING_WAIT_FOR_TX_CONFIRMED
+      - REWARDED
+      - SOMETHING_WRONG
+      - ALREADY_PAID
+      - ALREADY_REWARDING_WAIT_FOR_TX_CONFIRMED
+      - ALREADY_REWARDED
+    default: NOT_FOUND
+    description: |-
+      Status enum represents various bill statuses.
+
+       - NOT_FOUND: Bill not found.
+       - PAID: Bill has been paid.
+       - REWARDING_WAIT_FOR_TX_CONFIRMED: Bill is awaiting transaction confirmation for rewarding.
+       - REWARDED: Bill has been rewarded.
+       - SOMETHING_WRONG: Something went wrong with the bill operation.
+       - ALREADY_PAID: Bill has already been paid.
+       - ALREADY_REWARDING_WAIT_FOR_TX_CONFIRMED: Bill is already awaiting transaction confirmation for rewarding.
+       - ALREADY_REWARDED: Bill has already been rewarded.
+  googlerpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
